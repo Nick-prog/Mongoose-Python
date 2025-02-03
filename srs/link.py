@@ -19,13 +19,14 @@ class LinkedList:
             last = last.next
         last.next = new_node
 
-    def display(self):
+    def display(self, file):
         current = self.head
-        while current:
-            print(current.data, end= " -> ")
-            current = current.next
-        print("None")
-
+        with open(file, 'a+') as f:
+            while current:
+                print(current.data, end= '->', file=f)
+                current = current.next
+            print("None\n", file=f)
+            return
 
     def delete(self, data):
         current = self.head
