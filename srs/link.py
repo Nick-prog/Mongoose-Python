@@ -21,7 +21,7 @@ class LinkedList:
 
     def display(self, file):
         current = self.head
-        with open(file, 'a+') as f:
+        with open(file, 'w') as f:
             while current:
                 print(current.data, end= '->', file=f)
                 current = current.next

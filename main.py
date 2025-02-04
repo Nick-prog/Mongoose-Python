@@ -105,7 +105,6 @@ def single_check():
     for key, value in node_dict.items():
         value.display(out_file)
 
-
 if __name__ == "__main__":
     load_dotenv()
     auth_key = os.getenv("AUTH_KEY")
