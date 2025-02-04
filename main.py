@@ -21,7 +21,7 @@ def recursive(new_df: pd.DataFrame, link: list, contactid: int, mobilenumber: in
     # Avoids all error message outputs for mobile number
     data = json.loads(output)
     # pprint(data)
-    if data['contactId'] == None or link.search(contactid) == None:
+    if data['contactId'] == None or link.search(contactid) != None and len(link.hash_table) > 1:
         # print(f"{data['contactId']} leads to None. {data['firstName']} {data['lastName']} {data['mobileNumber']}")
         return link
 
@@ -63,9 +63,6 @@ def file_import_check():
         node_dict[index] = link
 
         time.sleep(0.05)
-
-    # Print dict
-    # pprint(node_dict)
 
     out_file = os.path.join(curr_dir, "output.txt")
 
@@ -118,9 +115,9 @@ if __name__ == "__main__":
     curr_dir = os.getcwd()
 
     # Check multiple numbers from a csv file
-    # file_import_check()
+    file_import_check()
 
     # Single number search
-    single_check()
+    # single_check()
     
     
