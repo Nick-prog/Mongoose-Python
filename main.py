@@ -30,16 +30,15 @@ def recursive(new_df: pd.DataFrame, link: list, contactid: int, mobilenumber: in
         # Look up contactid in import file for new updated number.
         try:
             mobile_number = new_df.loc[int(data['contactId']), "MobileNumber"]
-            print(f"{data['contactId']}, {mobile_number}")
+            # print(f"{data['contactId']}, {mobile_number}")
         except:
-            print('No contactid found in import file!')
+            # print('No contactid found in import file!')
             return link
         link = recursive(new_df, link, int(data['contactId']), mobile_number)
 
     return link
         
-def file_import_check():
-    csv_file = os.path.join(curr_dir, 'Mongoose Load ALL 012425.csv')
+def csv_file_linkedlist_lookup(csv_file: str):
     df = pd.read_csv(csv_file, encoding='ISO-8859-1')
     lookup_df = df[['ContactId', 'MobileNumber']]
 
@@ -64,18 +63,17 @@ def file_import_check():
 
         time.sleep(0.05)
 
-    out_file = os.path.join(curr_dir, "output.txt")
+    out_file = os.path.join(curr_dir, "file_import_output.txt")
 
     for key, value in node_dict.items():
         value.display(out_file)
 
-def single_check():
-    csv_file = os.path.join(curr_dir, 'Mongoose Load ALL 012425.csv')
+def single_contact_linkedlist_lookup(contactid: int, mobilenumber: int, csv_file: str, print_flag: bool):
     main_df = pd.read_csv(csv_file, encoding='ISO-8859-1')
 
     data = {
-        'ContactId': [1987995],
-        'MobileNumber': [8325739902]
+        'ContactId': [contactid],
+        'MobileNumber': [mobilenumber]
     }
 
     df = pd.DataFrame(data)
@@ -100,11 +98,35 @@ def single_check():
 
         time.sleep(0.05)
 
-    out_file = os.path.join(curr_dir, "output.txt")
+    if print_flag:
+
+        out_file = os.path.join(curr_dir, "single_output.txt")
+
+        for key, value in node_dict.items():
+            value.display(out_file)
+    else:
+        
+        return node_dict
+
+def single_contact_linkedlist_update(contactid: int, mobilenumber: int, csv_file: str, print_flag: bool):
+    main_df = pd.read_csv(csv_file, encoding='ISO-8859-1')
+    df = main_df.set_index("ContactId")
+
+    node_dict = single_contact_linkedlist_lookup(contactid, mobilenumber, csv_file, print_flag)
+    node_list = []
 
     for key, value in node_dict.items():
-        value.display(out_file)
+        for item in value.hash_table:
+            print(item)
+            mobile_number = df.loc[int(item), "MobileNumber"]
+            output = m.get_contact("11016573", int(mobile_number))
+            data = json.loads(output)
+            if data['contactId'] == None:
+                node_list.append((int(item), int(mobile_number), False))
+            else:
+                node_list.append((int(item), int(mobile_number), True))
 
+    pprint(node_list)
 if __name__ == "__main__":
     load_dotenv()
     auth_key = os.getenv("AUTH_KEY")
@@ -112,11 +134,15 @@ if __name__ == "__main__":
 
     # Load csv file, store numbers and contactids
     curr_dir = os.getcwd()
+    csv_file = os.path.join(curr_dir, 'Mongoose Load ALL 012425.csv')
 
     # Check multiple numbers from a csv file
-    file_import_check()
+    # csv_file_linkedlist_lookup(csv_file)
 
     # Single number search
-    # single_check()
+    # single_contact_linkedlist_lookup(contactid, mobilenumber, csv_file, True)
+
+    # Update Mongoose contact based on txt file
+    single_contact_linkedlist_update(1971764, 3467729866, csv_file, False)
     
     
