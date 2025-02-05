@@ -20,7 +20,6 @@ def recursive(new_df: pd.DataFrame, link: list, contactid: int, mobilenumber: in
     
     # Avoids all error message outputs for mobile number
     data = json.loads(output)
-    # pprint(data)
     if data['contactId'] == None or link.search(contactid) != None and len(link.hash_table) > 1:
         # print(f"{data['contactId']} leads to None. {data['firstName']} {data['lastName']} {data['mobileNumber']}")
         return link
@@ -117,16 +116,41 @@ def single_contact_linkedlist_update(contactid: int, mobilenumber: int, csv_file
 
     for key, value in node_dict.items():
         for item in value.hash_table:
-            print(item)
-            mobile_number = df.loc[int(item), "MobileNumber"]
-            output = m.get_contact("11016573", int(mobile_number))
-            data = json.loads(output)
-            if data['contactId'] == None:
-                node_list.append((int(item), int(mobile_number), False))
-            else:
-                node_list.append((int(item), int(mobile_number), True))
+            payload = json.dumps({
+                "mobileNumber": str(df.loc[int(item), "MobileNumber"]),
+                "uniqueCampusId": str(item),
+                "firstName": str(df.loc[int(item), "FirstName"]),
+                "lastName": str(df.loc[int(item), "LastName"]),
+                "customFields":{
+                    "Orientation_Date": str(df.loc[int(item), "Orientation_Date"]),
+                    "Admission_Type": str(df.loc[int(item), "Admission_Type"]),
+                    "College": str(df.loc[int(item), "College"]),
+                    "Major": str(df.loc[int(item), "Major"]),
+                    "City": str(df.loc[int(item), "City"]),
+                    "Entry_Term": str(df.loc[int(item), "Entry_Term"]),
+                    "MV_Hold": str(df.loc[int(item), "MV_Hold"]),
+                    "Status": str(df.loc[int(item), "Status"]),
+                    "Enrolled": str(df.loc[int(item), "Enrolled"]),
+                    "Owner": str(df.loc[int(item), "Owner"]),
+                    "Stage": str(df.loc[int(item), "Stage"]),
+                    "Javelina_Preview_Day": str(df.loc[int(item), "Javelina_Preview_Day"]),
+                    "State": str(df.loc[int(item), "State"]),
+                    "County": str(df.loc[int(item), "County"]),
+                    "Campus": str(df.loc[int(item), "Campus"]),
+                    "HSName": str(df.loc[int(item), "HSName"])
+                    },
+                "allowMobileUpdate": "true"
+                })
+            node_list.append(payload)
 
-    pprint(node_list)
+    # pprint(node_list)
+
+    for idx, item in enumerate(node_list):
+        output = m.update_contact(dept_code="11016573", payload=node_list[(len(node_list)-1)-idx])
+        print(item)
+        print(output, '\n')
+        time.sleep(0.5)
+
 if __name__ == "__main__":
     load_dotenv()
     auth_key = os.getenv("AUTH_KEY")
@@ -143,6 +167,11 @@ if __name__ == "__main__":
     # single_contact_linkedlist_lookup(contactid, mobilenumber, csv_file, True)
 
     # Update Mongoose contact based on txt file
-    single_contact_linkedlist_update(1971764, 3467729866, csv_file, False)
+    # To update a link of contacts, you must start at the base of the chain.
+    # EX: 1883912 -> 1971921 -> 1913150 -> 1744852, start with 1883912 and its new phone number
+    # DO NOT FORGET to delete the head manually or update it. 
+    # IF you forget, you will need to move the start point to another earlier part of the linked list.
+    # Double check your work with the csv import file.
+    single_contact_linkedlist_update(1987395, 2813524737, csv_file, False)
     
     
