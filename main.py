@@ -163,7 +163,7 @@ if __name__ == "__main__":
     # Check multiple numbers from a csv file
     # csv_file_linkedlist_lookup(csv_file)
 
-    # Single number search
+    # Single number search, IF True will generate an txt file with found linked listed
     # single_contact_linkedlist_lookup(contactid, mobilenumber, csv_file, True)
 
     # Update Mongoose contact based on txt file
