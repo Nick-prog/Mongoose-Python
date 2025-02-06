@@ -115,6 +115,8 @@ def single_contact_linkedlist_update(contactid: int, mobilenumber: int, csv_file
     node_list = []
 
     for key, value in node_dict.items():
+        pprint(value.hash_table)
+        print('\n')
         for item in value.hash_table:
             payload = json.dumps({
                 "mobileNumber": str(df.loc[int(item), "MobileNumber"]),
@@ -148,6 +150,11 @@ def single_contact_linkedlist_update(contactid: int, mobilenumber: int, csv_file
     for idx, item in enumerate(node_list):
         output = m.update_contact(dept_code="11016573", payload=node_list[(len(node_list)-1)-idx])
         print(item)
+        print(len(output))
+        if len(output) == 274:
+            raise RuntimeError("Duplicate found in import!", output)
+        elif len(output) == 56:
+            raise RuntimeError("Mobile Number is not valid!", output)
         print(output, '\n')
         time.sleep(0.5)
 
@@ -156,22 +163,50 @@ if __name__ == "__main__":
     auth_key = os.getenv("AUTH_KEY")
     m = srs.Mongoose(auth_key)
 
-    # Load csv file, store numbers and contactids
+    # Load csv file, store numbers and contactids.
     curr_dir = os.getcwd()
     csv_file = os.path.join(curr_dir, 'Mongoose Load ALL 012425.csv')
 
-    # Check multiple numbers from a csv file
+    # Check multiple numbers from a csv file.
     # csv_file_linkedlist_lookup(csv_file)
 
-    # Single number search, IF True will generate an txt file with found linked listed
+    # Single number search, IF True will generate an txt file with found linked listed.
     # single_contact_linkedlist_lookup(contactid, mobilenumber, csv_file, True)
 
-    # Update Mongoose contact based on txt file
+    # Update Mongoose contact based on txt file.
     # To update a link of contacts, you must start at the base of the chain.
     # EX: 1883912 -> 1971921 -> 1913150 -> 1744852, start with 1883912 and its new phone number
     # DO NOT FORGET to delete the head manually or update it. 
     # IF you forget, you will need to move the start point to another earlier part of the linked list.
     # Double check your work with the csv import file.
-    single_contact_linkedlist_update(1987395, 2813524737, csv_file, False)
+    single_contact_linkedlist_update(1971993, 9566677238, csv_file, False)
     
-    
+    # Update Mongoose contact based on manual payload.
+    # Set any dict value to 'nan' if empty.
+    # payload = json.dumps({
+    #     "mobileNumber": "9566930986",
+    #     "uniqueCampusId": "1448015",
+    #     "firstName": "Victoria",
+    #     "lastName": "Vela",
+    #     "customFields":{
+    #         "Orientation_Date": "nan",
+    #         "Admission_Type": "nan",
+    #         "College": "College of Agriculture & Natural Resources",
+    #         "Major": "Agriculture Science",
+    #         "City": "Zapata",
+    #         "Entry_Term": "Spring 2025",
+    #         "MV_Hold": "nan",
+    #         "Status": "nan",
+    #         "Enrolled": "Not Enrolled",
+    #         "Owner": "nan",
+    #         "Stage": "Decision",
+    #         "Javelina_Preview_Day": "nan",
+    #         "State": "TX",
+    #         "County": "nan",
+    #         "Campus": "Main",
+    #         "HSName": "Zapata High School"
+    #         },
+    #     "allowMobileUpdate": "true"
+    #     })
+    # output = m.update_contact(dept_code="11016573", payload=payload)
+    # print(output)
