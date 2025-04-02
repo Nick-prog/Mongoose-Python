@@ -37,7 +37,7 @@ def recursive(new_df: pd.DataFrame, link: list, contactid: int, mobilenumber: in
 
     return link
         
-def csv_file_linkedlist_lookup(csv_file: str):
+def csv_file_linkedlist_lookup(csv_file: str, print_flag: bool):
     df = pd.read_csv(csv_file, encoding='ISO-8859-1')
     lookup_df = df[['ContactId', 'MobileNumber']]
 
@@ -62,10 +62,15 @@ def csv_file_linkedlist_lookup(csv_file: str):
 
         time.sleep(0.05)
 
-    out_file = os.path.join(curr_dir, "file_import_output.txt")
+    if print_flag:
 
-    for key, value in node_dict.items():
-        value.display(out_file)
+        out_file = os.path.join(curr_dir, "file_import_output.txt")
+
+        for key, value in node_dict.items():
+            value.display(out_file)
+    else:
+        
+        return node_dict
 
 def single_contact_linkedlist_lookup(contactid: int, mobilenumber: int, csv_file: str, print_flag: bool):
     main_df = pd.read_csv(csv_file, encoding='ISO-8859-1')
@@ -158,7 +163,7 @@ def single_contact_linkedlist_update(contactid: int, mobilenumber: int, csv_file
         print(output, '\n')
         time.sleep(0.5)
 
-if __name__ == "__main__":
+def recursive_run():
     load_dotenv()
     auth_key = os.getenv("AUTH_KEY")
     m = srs.Mongoose(auth_key)
@@ -168,7 +173,7 @@ if __name__ == "__main__":
     csv_file = os.path.join(curr_dir, 'Mongoose Load ALL 012425.csv')
 
     # Check multiple numbers from a csv file.
-    # csv_file_linkedlist_lookup(csv_file)
+    # csv_file_linkedlist_lookup(csv_file, True)
 
     # Single number search, IF True will generate an txt file with found linked listed.
     # single_contact_linkedlist_lookup(contactid, mobilenumber, csv_file, True)
@@ -179,7 +184,7 @@ if __name__ == "__main__":
     # DO NOT FORGET to delete the head manually or update it. 
     # IF you forget, you will need to move the start point to another earlier part of the linked list.
     # Double check your work with the csv import file.
-    single_contact_linkedlist_update(1971993, 9566677238, csv_file, False)
+    # single_contact_linkedlist_update(1925885, 3612092157, csv_file, False)
     
     # Update Mongoose contact based on manual payload.
     # Set any dict value to 'nan' if empty.
@@ -210,3 +215,35 @@ if __name__ == "__main__":
     #     })
     # output = m.update_contact(dept_code="11016573", payload=payload)
     # print(output)
+
+    # Update Mongoose based on found linked list automatically.
+    # 1. Import csv file and find current linked list if any.
+    output = csv_file_linkedlist_lookup(csv_file, False)
+    pprint(output)
+
+if __name__ == "__main__":
+    # recursive_run()
+
+    # Open CSV file
+    c = srs.CSV()
+    c.find()
+    df = c.read()
+    search_df = c.search('Owner', 'Juana Villanueva', df=df)
+
+    load_dotenv()
+    auth_key = os.getenv("AUTH_KEY")
+    m = srs.Mongoose(auth_key)
+    for mobile in tqdm(search_df['MobileNumber'], desc='Update Loop', unit='iteration'):
+        output = m.get_contact("11016573", mobile)
+        output['customFields']['Owner'] = 'Jeremy Tamez'
+        output['allowMobileUpdate'] = "true"
+        output['uniqueCampusId'] = output['contactId']
+        del(output['contactId'])
+        del(output['dateCreated'])
+        del(output['optedOut'])
+        del(output['lastUpdatedOn'])
+        res = m.update_contact("11016573", payload=json.dumps(output))
+        if type(res) != dict:
+            print(res)
+            raise RuntimeError('Update failed.')
+        time.sleep(0.05)
